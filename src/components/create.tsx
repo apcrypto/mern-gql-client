@@ -1,48 +1,50 @@
+import React, { SyntheticEvent, useState } from 'react';
 import { useMutation } from '@apollo/client';
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
+import { CREATE_RECORD } from '../graphql/mutations/createRecord';
 import { GET_RECORDS } from '../graphql/queries/records';
-import { UPDATE_RECORD } from '../graphql/mutations/updateRecord';
 
-export default function Edit() {
-  const params = useLocation();
-  console.log(params.state);
-  const { id, name, level, position } = params.state.props.record;
+export default function Create() {
+  const [createRecord] = useMutation(CREATE_RECORD);
+
+
   const [form, setForm] = useState({
-    name,
-    position,
-    level,
+    name: '',
+    position: '',
+    level: '',
   });
+  
   const navigate = useNavigate();
-  const [updateRecord] = useMutation(UPDATE_RECORD);
   // These methods will update the state properties.
-  function updateForm(value) {
+  function updateForm(value: object) {
     return setForm((prev) => {
       return { ...prev, ...value };
     });
   }
 
-  // This following section will display the form that takes input from the user to update the data.
+  // This function will handle the submission.
+  async function onSubmit(e: SyntheticEvent) {
+    e.preventDefault();
+
+    // When a post request is sent to the create url, we'll add a new record to the database.
+    const newPerson = { ...form };
+
+    createRecord({
+      variables: newPerson,
+      refetchQueries: [GET_RECORDS, 'GetRecords'],
+    });
+
+    setForm({ name: '', position: '', level: '' });
+
+    navigate('/');
+  }
+  // This following section will display the form that takes the input from the user.
   return (
     <div>
-      <h3>Update Record</h3>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          updateRecord({
-            variables: {
-              updateRecordId: id,
-              position: form.position,
-              name: form.name,
-              level: form.level,
-            },
-            refetchQueries: [GET_RECORDS, 'GetRecords'],
-          });
-          navigate('/', { state: {} });
-        }}
-      >
+      <h3>Create New Record</h3>
+      <form onSubmit={onSubmit}>
         <div className="form-group">
-          <label htmlFor="name">Name: </label>
+          <label htmlFor="name">Name</label>
           <input
             type="text"
             className="form-control"
@@ -52,7 +54,7 @@ export default function Edit() {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="position">Position: </label>
+          <label htmlFor="position">Position</label>
           <input
             type="text"
             className="form-control"
@@ -105,12 +107,10 @@ export default function Edit() {
             </label>
           </div>
         </div>
-        <br />
-
         <div className="form-group">
           <input
             type="submit"
-            value="Update Record"
+            value="Create person"
             className="btn btn-primary"
           />
         </div>

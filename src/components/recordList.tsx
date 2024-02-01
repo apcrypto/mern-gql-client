@@ -4,33 +4,48 @@ import { Link } from 'react-router-dom';
 import { GET_RECORDS } from '../graphql/queries/records';
 import { DELETE_RECORD } from '../graphql/mutations/deleteRecord';
 
-const Record = (props) => (
+interface RecordProps {
+  record: Record;
+}
+
+type Record = {
+  id: string;
+  name: string;
+  position: string;
+  level: string;
+};
+
+const Record: React.FC<RecordProps> = ({ record }) => (
   <tr>
-    <td>{props.record.name}</td>
-    <td>{props.record.position}</td>
-    <td>{props.record.level}</td>
+    <td>{record.name}</td>
+    <td>{record.position}</td>
+    <td>{record.level}</td>
     <td>
       <Link
         className="btn btn-link"
-        to={`/edit/${props.record.id}`}
-        state={{ props }}
+        to={`/edit/${record.id}`}
+        state={{ record }}
       >
         Edit
       </Link>{' '}
       |
-      <DeleteRecord id={props.record.id} />
+      <DeleteRecord id={record.id} />
     </td>
   </tr>
 );
 
-const DeleteRecord = ({ id }) => {
+interface DeleteRecordProps {
+  id: string;
+}
+
+const DeleteRecord: React.FC<DeleteRecordProps> = ({ id }) => {
   const [deleteRecord, { data, loading, error }] = useMutation(DELETE_RECORD, {
     variables: { id },
     refetchQueries: [GET_RECORDS, 'GetRecords'],
   });
 
-  if (loading) return 'Deleting...';
-  if (error) return `Delete error! ${error.message}`;
+  if (loading) return <span>Deleting...</span>;
+  if (error) return <span>Delete error! {error.message}</span>;
 
   return (
     <button
@@ -44,13 +59,12 @@ const DeleteRecord = ({ id }) => {
   );
 };
 
-export const RecordList = () => {
+export const RecordList: React.FC = () => {
   const { loading, error, data } = useQuery(GET_RECORDS);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error : {error.message}</p>;
 
-  // This following section will display the table with the records of individuals.
   return (
     <div>
       <h3>Record List</h3>
@@ -64,7 +78,7 @@ export const RecordList = () => {
           </tr>
         </thead>
         <tbody>
-          {data?.records.map((record) => (
+          {data?.records.map((record: Record) => (
             <Record record={record} key={record.id} />
           ))}
         </tbody>
