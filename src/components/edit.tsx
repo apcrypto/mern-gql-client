@@ -6,14 +6,14 @@ import { UPDATE_RECORD } from '../graphql/mutations/updateRecord';
 
 export default function Edit() {
   const params = useLocation();
-  const { id, name, level, position } = params.state.props.record;
+  const { id, name, level, position } = params.state.record;
 
   const [form, setForm] = useState({
     name,
     position,
     level,
   });
-  
+
   const navigate = useNavigate();
   const [updateRecord] = useMutation(UPDATE_RECORD);
   // These methods will update the state properties.
